@@ -13,7 +13,7 @@ let favoriteMovies = JSON.parse(localStorage.getItem('favorites')) || [];
 // Fetch and display popular movies
 async function fetchPopularMovies() {
     try {
-        const response = await fetch(`${apiUrl}/movie/popular?api_key=${apiKey}&language=es-ES&page=1`);
+        const response = await fetch(`${apiUrl}/movie/popular?api_key=${apiKey}`);
         const data = await response.json();
         displayMovies(data.results);
     } catch (error) {
@@ -23,14 +23,14 @@ async function fetchPopularMovies() {
 
 // Display movies
 function displayMovies(movies) {
-    movieList.innerHTML = '';
+    movieList.innerHTML = ''; // Limpia la lista de películas
     movies.forEach(movie => {
         const li = document.createElement('li');
         li.innerHTML = `
             <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
             <span>${movie.title}</span>
         `;
-        li.onclick = () => showMovieDetails(movie.id);
+        li.onclick = () => showMovieDetails(movie.id); // Muestra detalles al hacer clic en la película
         movieList.appendChild(li);
     });
 }
@@ -38,16 +38,20 @@ function displayMovies(movies) {
 // Show movie details
 async function showMovieDetails(movieId) {
     try {
-        const response = await fetch(`${apiUrl}/movie/${movieId}?api_key=${apiKey}&language=es-ES`);
+        const response = await fetch(`${apiUrl}/movie/${movieId}?api_key=${apiKey}`);
         const movie = await response.json();
+
+        // Actualizamos el contenedor de detalles con la información de la película
         detailsContainer.innerHTML = `
             <h3>${movie.title}</h3>
             <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
             <p>${movie.overview}</p>
-            <p><strong>Fecha de lanzamiento:</strong> ${movie.release_date}</p>
+            <p><strong>Rating:</strong> ${movie.vote_average}</p>
         `;
-        selectedMovieId = movieId;
+
+        // Mostrar la sección de detalles
         movieDetails.classList.remove('hidden');
+        selectedMovieId = movieId; // Guardar el ID de la película seleccionada
     } catch (error) {
         console.error('Error fetching movie details:', error);
     }
@@ -58,7 +62,7 @@ searchButton.addEventListener('click', async () => {
     const query = searchInput.value;
     if (query) {
         try {
-            const response = await fetch(`${apiUrl}/search/movie?api_key=${apiKey}&query=${query}&language=es-ES&page=1`);
+            const response = await fetch(`${apiUrl}/search/movie?api_key=${apiKey}&query=${query}`);
             const data = await response.json();
             displayMovies(data.results);
         } catch (error) {
@@ -74,9 +78,14 @@ addToFavoritesButton.addEventListener('click', () => {
             id: selectedMovieId,
             title: document.querySelector('#details h3').textContent
         };
+
         if (!favoriteMovies.some(movie => movie.id === selectedMovieId)) {
             favoriteMovies.push(favoriteMovie);
+
+            // Guardamos la lista de favoritos en localStorage
             localStorage.setItem('favorites', JSON.stringify(favoriteMovies));
+
+            // Actualizamos la lista de favoritos en la página
             displayFavorites();
         }
     }
@@ -84,7 +93,7 @@ addToFavoritesButton.addEventListener('click', () => {
 
 // Display favorite movies
 function displayFavorites() {
-    favoritesList.innerHTML = '';
+    favoritesList.innerHTML = ''; // Limpiar la lista de favoritos
     favoriteMovies.forEach(movie => {
         const li = document.createElement('li');
         li.textContent = movie.title;
@@ -93,5 +102,5 @@ function displayFavorites() {
 }
 
 // Initial fetch of popular movies and display favorites
-fetchPopularMovies();
-displayFavorites();
+fetchPopularMovies(); // Obtiene y muestra las películas populares
+displayFavorites(); // Muestra las películas favoritas guardadas
